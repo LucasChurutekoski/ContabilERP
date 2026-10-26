@@ -1,0 +1,14 @@
+# O IDE do Delphi espera quebra de linha CRLF (Windows).
+# Com LF, o IDE calcula posicoes erradas ao editar o .dpr e corrompe o arquivo.
+*.pas    text eol=crlf
+*.dfm    text eol=crlf
+*.dpr    text eol=crlf
+*.dproj  text eol=crlf
+*.sql    text eol=crlf
+*.txt    text eol=crlf
+*.md     text eol=crlf
+
+# Binarios
+*.res    binary
+*.ico    binary
+*.db     binary

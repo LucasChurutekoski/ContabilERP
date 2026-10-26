@@ -1,0 +1,351 @@
+﻿=====================================================================
+ CONTABIL ERP - PASSO A PASSO DE USO
+=====================================================================
+
+---------------------------------------------------------------------
+ 1. COMO O SISTEMA FUNCIONA (em uma linha)
+---------------------------------------------------------------------
+
+ Voce CADASTRA as coisas, REGISTRA o que aconteceu (movimentos),
+ e o sistema FAZ A CONTABILIDADE SOZINHO. Depois voce CONSULTA.
+
+   Cadastros  -->  Movimentos  -->  (lancamento automatico)  -->  Consultas
+
+ Regra de ouro:
+   - Tem ITEM envolvido (pneu, filtro, mao de obra, servico)?  -> menu Movimentos
+   - E so DINHEIRO (aporte, pagar, receber, salario)?          -> Movimentos > Lancamento contabil
+
+
+---------------------------------------------------------------------
+ 2. ABRINDO O SISTEMA
+---------------------------------------------------------------------
+
+ 1) Rode o programa (F9 no Delphi).
+ 2) Na primeira vez, o banco e criado sozinho (pasta banco\contabil.db).
+ 3) Faca login. Usuarios de teste (senhas no topo do arquivo sql\seed.sql):
+      admin       -> pode tudo
+      contador    -> contabilidade (lancamentos e relatorios)
+      estoquista  -> cadastros do ERP e movimentos de estoque
+ 4) Errou a senha 3 vezes? O sistema fecha.
+ 5) A barra de baixo mostra quem esta logado.
+
+
+---------------------------------------------------------------------
+ 3. MAPA DE NAVEGACAO (menu principal)
+---------------------------------------------------------------------
+
+ Toda tela abre por cima da principal. Para voltar: botao Fechar, Esc ou X.
+ Item do menu cinza = seu perfil nao tem permissao.
+
+ CADASTROS
+   Plano de contas ............ contas contabeis (arvore 1, 1.1, 1.1.1...)
+   Clientes e fornecedores .... nome, CPF/CNPJ, cliente e/ou fornecedor
+   Itens e servicos ........... produtos (tem estoque) e servicos (nao tem)
+        botao "..." da conta    -> abre o Plano de contas
+        botao "..." da unidade  -> abre o cadastro de Unidades
+   Locais de estoque .......... Almoxarifado > Prateleiras
+   Veiculos da frota .......... placa, descricao, ano
+
+ MOVIMENTOS
+   Lancamento contabil ........ lancamento manual (so dinheiro)
+        botao "Ver lancamentos..." -> abre o Diario
+   Compra ..................... entra no estoque (ou servico tomado)
+   Consumo .................... sai do estoque para uma despesa
+   Transferencia entre locais . muda de prateleira (sem contabilidade)
+   Prestacao de servico ....... servico que a empresa vende (receita)
+   Manutencao de veiculo ...... pecas + mao de obra para um veiculo
+
+ CONSULTAS
+   Saldo de estoque ........... quantidade por prateleira + conciliacao
+   Custo de manutencao por veiculo
+   Diario ..................... lancamentos entre duas datas
+   Razonete ................... a conta em T (debito | credito)
+   Balancete de verificacao ... saldos de todas as contas
+        botao "Imprimir (FastReport)" -> relatorio para imprimir/PDF
+   Resumo patrimonial ......... Ativo = Passivo + PL
+
+ SISTEMA
+   Usuarios e permissoes ...... (so admin) usuarios, perfis, permissoes
+   Demonstracao ............... (so admin) zerar movimentos / cenarios prontos
+   Trocar usuario
+   Sair
+
+
+---------------------------------------------------------------------
+ 4. COMO USAR CADA TIPO DE TELA
+---------------------------------------------------------------------
+
+ A) TELAS DE CADASTRO (barra de botoes no topo)
+      +  incluir      -  excluir      ^  editar
+      v  salvar       x  cancelar     setas: navegar
+    - INCLUIR: clique em "+", preencha, clique em "v" (salvar).
+    - ALTERAR: clique na linha da grade, depois em "^", altere, "v".
+    - Os campos ficam travados ate clicar em "+" ou "^".
+    - Durante a inclusao/edicao a grade fica bloqueada (de proposito).
+
+ B) LANCAMENTO CONTABIL
+    1) Data e Historico (o texto que explica o fato).
+    2) Para cada linha: Conta + Debito/Credito + Valor -> Adicionar.
+    3) Rodape vermelho = nao fechou. Verde = debitos iguais a creditos.
+    4) O valor que falta ja aparece sugerido.
+    5) "Gravar" so libera quando fecha.
+
+ C) MOVIMENTOS (compra, consumo, transferencia, servico, manutencao)
+    1) Preencha o cabecalho (fornecedor/cliente, pagamento, veiculo...).
+    2) Para cada item: Item -> Origem/Destino -> Quantidade -> Valor -> Adicionar.
+       A lista de ORIGEM mostra so as prateleiras que tem o item, com a quantidade.
+    3) Gravar. A mensagem mostra o numero do movimento e do lancamento gerado.
+
+ D) CONSULTAS
+    Abrem calculadas. Botao "Atualizar" recalcula.
+
+
+---------------------------------------------------------------------
+ 5. REGRAS DO SISTEMA (o que ele aceita e o que ele barra)
+---------------------------------------------------------------------
+
+ Contabilidade
+   - Todo lancamento: total de debitos = total de creditos.
+   - So contas ANALITICAS recebem lancamento (as sinteticas so somam).
+   - Saldo = diferenca entre debitos e creditos, do lado maior.
+   - Conta filha herda o grupo da conta pai; o codigo comeca pelo do pai.
+
+ Estoque
+   - So prateleiras (local final) guardam itens; o Almoxarifado so agrupa.
+   - Nao sai mais do que tem na prateleira (saldo insuficiente = bloqueado).
+   - Custo medio: recalculado a cada compra. Saidas usam o custo medio.
+   - Transferencia NAO gera lancamento (o patrimonio nao muda).
+
+ Lancamento automatico (o sistema escolhe as contas)
+   - Compra a vista ........ D Estoques (ou despesa)  / C Bancos
+   - Compra a prazo ........ D Estoques (ou despesa)  / C Fornecedores
+   - Consumo ............... D Despesa escolhida      / C Estoques
+   - Servico a vista ....... D Bancos                 / C Receita de Servicos
+   - Servico a prazo ....... D Clientes               / C Receita de Servicos
+   - Manutencao ............ D Despesa de Manutencao  / C Estoques (pecas)
+                                                      / C Bancos ou Fornecedores (mao de obra)
+
+ Cadastros
+   - CPF (11 digitos) e CNPJ (14) com digito verificador conferido.
+   - Produto usa conta do Ativo (Estoques). Servico usa Despesa (tomado)
+     ou Receita (prestado).
+   - Nao exclui o que ja foi usado (fornecedor com compra, item com movimento).
+
+ Seguranca
+   - Cada perfil tem permissoes; cada operacao de estoque tem a sua.
+   - Permissao nova vale no proximo login (use "Trocar usuario").
+   - O admin nao consegue se bloquear (nem se excluir, nem se inativar).
+
+
+---------------------------------------------------------------------
+ 6. ORDEM DE USO NO DIA A DIA
+---------------------------------------------------------------------
+
+ 1) Cadastros (uma vez): fornecedores, clientes, itens, locais, veiculos.
+ 2) Dinheiro inicial: Lancamento contabil (aporte de capital).
+ 3) Compras: o estoque entra e a contabilidade e feita sozinha.
+ 4) Uso: consumo, manutencao de veiculo, transferencia.
+ 5) Vendas de servico: Prestacao de servico.
+ 6) Financeiro: pagamentos e recebimentos no Lancamento contabil.
+ 7) Conferencia: Saldo de estoque, Razonete, Balancete, Resumo.
+
+
+=====================================================================
+ 7. CASOS DE USO PARA TESTAR (faca na ordem)
+=====================================================================
+
+ Preparacao: entre como admin.
+             Sistema > Demonstracao > Zerar movimentos.
+             (Se ja fez o caso 2 antes, pule-o: cadastros nao sao zerados.)
+
+ -------------------------------------------------------------------
+ CASO 1 - Permissoes basicas
+ -------------------------------------------------------------------
+   Fazer:    Sistema > Trocar usuario > estoquista.
+   Esperado: Lancamento contabil, Razonete, Balancete e Resumo cinzas.
+             Compra, Consumo e Manutencao liberados.
+   Depois:   Trocar usuario > admin de novo.
+
+ -------------------------------------------------------------------
+ CASO 2 - Cadastrar um fornecedor (mascara e validacao de CNPJ)
+ -------------------------------------------------------------------
+   Tela:     Cadastros > Clientes e fornecedores > "+"
+   Fazer:    Nome: Distribuidora Rodas Ltda
+             CPF/CNPJ: digite 12345678000195  (so os numeros)
+             Marque Fornecedor > salvar.
+   Esperado: o campo vira 12.345.678/0001-95 enquanto voce digita. Salva.
+   Teste de erro: edite (^) e mude o final para ...0001-90 > salvar
+             -> "CPF/CNPJ invalido". Cancele (x).
+
+ -------------------------------------------------------------------
+ CASO 3 - O "+" nao perde o registro
+ -------------------------------------------------------------------
+   Tela:     Clientes e fornecedores
+   Fazer:    Clique "+" e tente clicar na grade.
+   Esperado: a grade esta bloqueada; o cursor ja esta no campo Nome.
+             Cancele (x).
+
+ -------------------------------------------------------------------
+ CASO 4 - Aporte de capital (lancamento manual)
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Lancamento contabil
+   Fazer:    Historico: Aporte de capital dos socios
+             Bancos / Debito / 50000 > Adicionar
+             (repare: rodape vermelho, valor 50000 ja sugerido no Credito)
+             Capital Social / Credito / 50000 > Adicionar > Gravar
+   Esperado: "Lancamento n. 1 gravado". Balancete: 50.000 = 50.000.
+
+ -------------------------------------------------------------------
+ CASO 5 - Compra a vista
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Compra
+   Fazer:    Fornecedor: Pneus Sul Ltda / A vista
+             Pneu 175/70 R14 / destino Prateleira 1A / qtd 10 / valor 400
+             Adicionar > Gravar
+   Esperado: lancamento automatico D Estoques 4.000 / C Bancos 4.000.
+             Saldo de estoque: Prateleira 1A = 10, custo medio 400,00.
+
+ -------------------------------------------------------------------
+ CASO 6 - Compra a prazo (custo medio muda)
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Compra
+   Fazer:    Fornecedor: Distribuidora Rodas Ltda / A prazo
+             Pneu / destino Prateleira 2B / qtd 5 / valor 460 > Adicionar > Gravar
+   Esperado: D Estoques 2.300 / C Fornecedores 2.300.
+             Custo medio do pneu = (10x400 + 5x460) / 15 = 420,00.
+
+ -------------------------------------------------------------------
+ CASO 7 - Transferencia (sem contabilidade)
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Transferencia entre locais
+   Fazer:    Pneu / origem: a lista mostra 1A (10) e 2B (5) -> escolha 2B
+             destino Prateleira 1A / qtd 3 > Adicionar > Gravar
+   Esperado: "Transferencia nao gera lancamento contabil".
+             Saldo de estoque: 1A = 13, 2B = 2.
+
+ -------------------------------------------------------------------
+ CASO 8 - Consumo
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Consumo
+   Fazer:    Conta: Despesa de Manutencao
+             Pneu / origem 1A (13) / qtd 4 > Adicionar > Gravar
+   Esperado: D Despesa de Manutencao 1.680 / C Estoques 1.680 (4 x 420).
+             Prateleira 1A = 9.
+
+ -------------------------------------------------------------------
+ CASO 9 - Saldo insuficiente (deve ser BLOQUEADO)
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Consumo
+   Fazer:    Pneu / origem 2B (2) / qtd 5 > Adicionar > Gravar
+   Esperado: "Saldo insuficiente... disponivel 2, solicitado 5".
+             Nada e gravado. Feche a tela.
+
+ -------------------------------------------------------------------
+ CASO 10 - Manutencao do caminhao (pecas + mao de obra)
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Manutencao de veiculo
+   Fazer:    Veiculo: ABC1D23 Caminhao Volvo FH 540
+             Conta: Despesa de Manutencao (ja vem escolhida)
+             Fornecedor da mao de obra: Auto Pecas Brasil SA / A prazo
+             Pneu / origem 1A (9) / qtd 2 > Adicionar
+             Mao de obra mecanica / qtd 2 / valor 90 > Adicionar > Gravar
+   Esperado: UM lancamento: D Despesa de Manutencao 1.020
+                            C Estoques 840 (2 x 420)
+                            C Fornecedores 180 (mao de obra a prazo)
+             Consultas > Custo de manutencao por veiculo:
+               Volvo = pecas 840 + mao de obra 180 = 1.020.
+               Clique no Volvo: embaixo aparecem o pneu e a mao de obra.
+
+ -------------------------------------------------------------------
+ CASO 11 - Prestacao de servico (receita)
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Prestacao de servico
+   Fazer:    Cliente: Transportes Silva / A vista
+             Suporte tecnico / qtd 3 / valor 150 > Adicionar > Gravar
+   Esperado: D Bancos 450 / C Receita de Servicos 450.
+
+ -------------------------------------------------------------------
+ CASO 12 - Pagar o fornecedor (lancamento manual)
+ -------------------------------------------------------------------
+   Tela:     Movimentos > Lancamento contabil
+   Fazer:    Historico: Pagamento Distribuidora Rodas
+             Fornecedores / Debito / 2300 > Adicionar
+             Bancos / Credito / 2300 > Adicionar > Gravar
+   Esperado: Razonete de Fornecedores: sobra 180,00 C
+             (a mao de obra da Auto Pecas, ainda nao paga).
+
+ -------------------------------------------------------------------
+ CASO 13 - Conferencia final (os numeros TEM que bater)
+ -------------------------------------------------------------------
+   Consultas > Balancete:
+       Bancos ................... 44.150,00 D
+       Estoques .................  3.780,00 D
+       Despesa de Manutencao ....  2.700,00 D
+       Fornecedores .............    180,00 C
+       Capital Social ........... 50.000,00 C
+       Receita de Servicos ......    450,00 C
+       TOTAL: 50.630,00 = 50.630,00   (Balancete fechado)
+   Consultas > Resumo patrimonial:
+       Ativo 47.930 = Passivo 180 + PL 47.750
+       (PL = capital 50.000 - prejuizo 2.250; receitas 450 - despesas 2.700)
+   Consultas > Saldo de estoque:
+       Pneu 1A = 7, Pneu 2B = 2 -> 9 x 420 = 3.780
+       Fisico 3.780 = Contabil 3.780  (Conciliado)
+   Consultas > Razonete > Bancos:
+       Debitos: 50.000 e 450  |  Creditos: 4.000 e 2.300  -> saldo 44.150 D
+
+ -------------------------------------------------------------------
+ CASO 14 - Diario com filtro de datas
+ -------------------------------------------------------------------
+   Tela:     Consultas > Diario (ou "Ver lancamentos..." no Lancamento contabil)
+   Fazer:    De = dia 1 do mes, Ate = hoje > Filtrar
+   Esperado: 7 lancamentos. Origem M = manual (1 e 7), E = estoque (2 a 6).
+   Depois:   De e Ate = ontem > Filtrar -> lista vazia.
+
+ -------------------------------------------------------------------
+ CASO 15 - Relatorio FastReport
+ -------------------------------------------------------------------
+   Tela:     Consultas > Balancete > Imprimir (FastReport)
+   Esperado: preview com as contas, totais 50.630 = 50.630 e a frase
+             "Balancete fechado". Dá para exportar em PDF pelo preview.
+
+ -------------------------------------------------------------------
+ CASO 16 - Criar um usuario que so compra e ve o estoque
+ -------------------------------------------------------------------
+   Tela:     Sistema > Usuarios e permissoes
+   Fazer:    Aba "Perfis e permissoes": "+" > nome Comprador > salvar
+             Marque: Registrar compras (MOV_COMPRA)
+                     Consultar saldo de estoque... (EST_CONSULTAR)
+             > Salvar permissoes
+             Aba "Usuarios": "+" > login joao / nome Joao Comprador /
+             perfil Comprador / ativo / nova senha (4+ caracteres) > salvar
+             Sistema > Trocar usuario > joao
+   Esperado: so Compra, Saldo de estoque e Custo por veiculo liberados.
+             Todo o resto cinza.
+   Depois:   Trocar usuario > admin.
+
+ -------------------------------------------------------------------
+ CASO 17 - Regras que devem BLOQUEAR (testes negativos)
+ -------------------------------------------------------------------
+   a) Lancamento contabil so com o debito -> Gravar nao libera.
+   b) Clientes e fornecedores > excluir "Pneus Sul Ltda"
+      -> "registro usado em outro cadastro ou movimento".
+   c) Itens > novo servico com a conta Estoques -> "Servico deve usar
+      conta de Despesa ou de Receita".
+   d) Plano de contas > editar Bancos > marcar Sintetica -> bloqueado
+      (tem lancamentos).
+   e) Locais > Almoxarifado Central > marcar "Aceita estoque" -> bloqueado
+      (tem sub-locais).
+   f) Manutencao sem veiculo -> "Escolha o veiculo".
+   g) Usuarios > perfil Administrador > desmarcar "Gerenciar usuarios"
+      > Salvar -> bloqueado (o admin nao pode se trancar para fora).
+
+ -------------------------------------------------------------------
+ CASO 18 - Cenarios prontos (atalho para a demonstracao)
+ -------------------------------------------------------------------
+   Sistema > Demonstracao > Zerar movimentos
+   Sistema > Demonstracao > Carregar cenario Pet Shop da Bia
+     -> Balancete 25.000 = 25.000 / Ativo 20.500 = Passivo 0 + PL 20.500
+   Zerar movimentos de novo
+   Sistema > Demonstracao > Carregar cenario da frota (pneus)
+     -> custo medio 520 / estoque fisico 2.600 = contabil 2.600

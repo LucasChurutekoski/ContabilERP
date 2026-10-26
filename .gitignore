@@ -1,0 +1,25 @@
+# Saida da compilacao (o IDE recria)
+Win32/
+Win64/
+*.dcu
+*.exe
+*.map
+*.drc
+*.rsm
+
+# Configuracoes locais da maquina de quem compila
+*.local
+*.identcom
+*.dsk
+*.stat
+
+# Backups automaticos do IDE do Delphi
+__history/
+__recovery/
+*.~*
+
+# Banco de dados local: e recriado na primeira execucao (sql/schema.sql + sql/seed.sql)
+banco/
+
+# Pacotes montados para entrega
+entrega/
