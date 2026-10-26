@@ -1,17 +1,18 @@
 object DM: TDM
-  Height = 240
-  Width = 320
+  Height = 300
+  Width = 400
+  PixelsPerInch = 120
   object Conexao: TFDConnection
     Params.Strings = (
       'DriverID=SQLite'
       'LockingMode=Normal'
       'StringFormat=Unicode')
     LoginPrompt = False
-    Left = 56
-    Top = 40
+    Left = 70
+    Top = 50
   end
   object SQLiteDriverLink: TFDPhysSQLiteDriverLink
-    Left = 56
-    Top = 112
+    Left = 70
+    Top = 140
   end
 end

@@ -23,3 +23,7 @@ banco/
 
 # Pacotes montados para entrega
 entrega/
+
+# Excecao: o executavel pronto para demonstracao vai junto no repositorio
+# (o banco dessa pasta continua fora: e recriado na primeira execucao)
+!ContabilERP-Compilado/contabilERP.exe
